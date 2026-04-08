@@ -1,0 +1,48 @@
+name: ttop
+base: core24
+version: '2.1.1'
+license: GPL-3.0
+summary: Ttop is a TUI system monitor
+description: |
+  A lightweight system monitor written in C++ that displays CPU, memory, 
+  and process information. Now includes the ability to send signals 
+  to manage processes directly from the interface.
+
+grade: stable
+confinement: strict
+
+# Multi-architecture support for Intel/AMD and ARM (Raspberry Pi/Mac)
+platforms:
+  amd64:
+  arm64:
+    build-on: [amd64]
+    build-for: [arm64]
+
+parts:
+  ttop:
+    plugin: make
+    source: .
+    build-packages:
+      - g++
+      - libncursesw5-dev
+    stage-packages:
+      - libncursesw6
+    # This block moves your icon and desktop file into the Snap
+    override-prime: |
+      craftctl default
+      mkdir -p $CRAFT_PRIME/meta/gui
+      if [ -d $CRAFT_PROJECT_DIR/snap/gui ]; then
+        cp -r $CRAFT_PROJECT_DIR/snap/gui/* $CRAFT_PRIME/meta/gui/
+      fi
+
+apps:
+  ttop:
+    command: bin/ttop
+    desktop: meta/gui/ttop.desktop
+    plugs:
+      - system-observe     # To read system stats
+      - mount-observe      # To see disk usage
+      - network-observe    # To see network activity
+      - hardware-observe   # To see hardware info
+      - cpu-control        # For advanced CPU metrics
+      - process-control    # CRITICAL: Allows sending signals (kill)
