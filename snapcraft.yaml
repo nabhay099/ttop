@@ -43,6 +43,5 @@ apps:
       - system-observe     # To read system stats
       - mount-observe      # To see disk usage
       - network-observe    # To see network activity
-      - hardware-observe   # To see hardware info
-      - cpu-control        # For advanced CPU metrics
+      - hardware-observe   # To see hardware
       - process-control    # CRITICAL: Allows sending signals (kill)
