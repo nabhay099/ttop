@@ -1,9 +1,3 @@
-// ╔══════════════════════════════════════════════════════════════════╗
-// ║  ttop — Terminal System Monitor v12                              ║
-// ║  Process Signals • Enhanced Memory • Compact Disk                ║
-// ║  Compile: g++ -std=c++17 -O2 -o ttop ttop.cpp -lncursesw        ║
-// ╚══════════════════════════════════════════════════════════════════╝
-
 #include <ncurses.h>
 #include <locale.h>
 #include <fstream>
@@ -24,9 +18,7 @@
 #include <chrono>
 #include <sys/wait.h>
 
-// ─────────────────────────────────────────────────────────────────────
 //  COLOR PAIRS
-// ─────────────────────────────────────────────────────────────────────
 #define C_DEFAULT   1
 #define C_DIM       2
 #define C_RED       3
@@ -45,9 +37,7 @@
 #define C_BAR_EMPTY 16
 #define C_WARNING  17
 
-// ─────────────────────────────────────────────────────────────────────
 //  THEMES
-// ─────────────────────────────────────────────────────────────────────
 enum Theme { TH_NEON=0, TH_FROST=1, TH_MIDNIGHT=2 };
 static const char* THEME_NAMES[] = {"NEON","FROST","MIDNIGHT"};
 
@@ -80,9 +70,7 @@ static void applyTheme() {
     init_pair(C_WARNING,   COLOR_YELLOW,  COLOR_BLACK);
 }
 
-// ─────────────────────────────────────────────────────────────────────
 //  GLOBALS
-// ─────────────────────────────────────────────────────────────────────
 static volatile bool g_resize = false;
 static volatile bool g_quit   = false;
 
@@ -107,9 +95,7 @@ struct FPS {
     }
 } g_fps;
 
-// ─────────────────────────────────────────────────────────────────────
 //  DATA STRUCTURES
-// ─────────────────────────────────────────────────────────────────────
 struct CPUCore {
     long long user=0,nice=0,system=0,idle=0,iowait=0,irq=0,softirq=0,steal=0;
     long long total() const {return user+nice+system+idle+iowait+irq+softirq+steal;}
@@ -171,9 +157,7 @@ struct AppState {
     std::vector<ProcInfo> procs;
 };
 
-// ─────────────────────────────────────────────────────────────────────
 //  UTILITY
-// ─────────────────────────────────────────────────────────────────────
 static std::string trim(const std::string& s){
     auto a=s.find_first_not_of(" \t\r\n");
     if(a==std::string::npos) return "";
@@ -223,9 +207,7 @@ static int tempColor(float t){
     return C_RED;
 }
 
-// ─────────────────────────────────────────────────────────────────────
 //  RAM TYPE DETECTION
-// ─────────────────────────────────────────────────────────────────────
 static MemTypeInfo readMemType(){
     MemTypeInfo info;
     info.type = "Unknown";
@@ -305,9 +287,7 @@ static MemTypeInfo readMemType(){
     return info;
 }
 
-// ─────────────────────────────────────────────────────────────────────
 //  READERS
-// ─────────────────────────────────────────────────────────────────────
 static CPUStats readCPU(){
     CPUStats s; std::ifstream f("/proc/stat"); std::string line;
     while(std::getline(f,line)){
@@ -548,9 +528,7 @@ static HWInfo readHW(const SysMeta& meta){
     return hw;
 }
 
-// ─────────────────────────────────────────────────────────────────────
 //  PROCESS SIGNAL FUNCTIONS
-// ─────────────────────────────────────────────────────────────────────
 struct SignalOption {
     int num;
     const char* name;
@@ -574,9 +552,7 @@ static int sendSignalToProcess(int pid, int sig){
     return -1;  // Failed
 }
 
-// ─────────────────────────────────────────────────────────────────────
 //  ENHANCED SIGNAL SEND UI
-// ─────────────────────────────────────────────────────────────────────
 static int g_signal_selected = 0;  // Which signal is highlighted
 
 static void drawSignalUI(const AppState& st, int rows, int cols){
@@ -616,9 +592,7 @@ static void drawSignalUI(const AppState& st, int rows, int cols){
     mvaddstr(ui_y, ui_x+2, " SEND SIGNAL TO PROCESS ");
     attroff(COLOR_PAIR(C_WARNING) | A_BOLD);
     
-    // ═══════════════════════════════════════════════════════════════
     // LEFT SIDE: Signal List
-    // ═══════════════════════════════════════════════════════════════
     attron(COLOR_PAIR(C_TITLE) | A_BOLD);
     mvaddstr(ui_y+2, ui_x+2, "SIGNALS");
     attroff(COLOR_PAIR(C_TITLE) | A_BOLD);
@@ -647,9 +621,7 @@ static void drawSignalUI(const AppState& st, int rows, int cols){
         attroff(COLOR_PAIR(C_DIM));
     }
     
-    // ═══════════════════════════════════════════════════════════════
     // RIGHT SIDE: Process Information
-    // ═══════════════════════════════════════════════════════════════
     attron(COLOR_PAIR(C_TITLE) | A_BOLD);
     mvaddstr(ui_y+2, ui_x+left_w+2, "PROCESS INFO");
     attroff(COLOR_PAIR(C_TITLE) | A_BOLD);
@@ -861,9 +833,7 @@ static std::vector<ProcInfo> readProcs(long long cpu_delta){
     return procs;
 }
 
-// ─────────────────────────────────────────────────────────────────────
 //  STATE UPDATE
-// ─────────────────────────────────────────────────────────────────────
 static void updateState(AppState& st){
     st.cpu_prev=st.cpu_curr; st.net_prev=st.net_curr; st.disk_io_prev=st.disk_io_curr;
     st.cpu_curr=readCPU(); st.mem=readMem(); st.sensors=readSensors();
@@ -923,9 +893,7 @@ static void updateState(AppState& st){
     if(g_cfg.proc && cpu_delta>0) st.procs=readProcs(cpu_delta);
 }
 
-// ═════════════════════════════════════════════════════════════════════
 //  DRAWING
-// ═════════════════════════════════════════════════════════════════════
 static const char* SPARK[]={" ","▁","▂","▃","▄","▅","▆","▇","█"};
 
 static void drawGradientBar(int y,int x,int w,double pct){
@@ -1015,9 +983,8 @@ static void divline(int y,int x,int w){
     attroff(COLOR_PAIR(C_BORDER));
 }
 
-// ─────────────────────────────────────────────────────────────────────
+
 //  TOP / BOTTOM BARS
-// ─────────────────────────────────────────────────────────────────────
 static void drawTopBar(const AppState& st,int cols){
     attron(COLOR_PAIR(C_HBAR)|A_BOLD);
     for(int i=0;i<cols;i++) mvaddch(0,i,' ');
@@ -1101,9 +1068,7 @@ static void drawBottomBar(int rows,int cols){
     attroff(COLOR_PAIR(C_HBAR));
 }
 
-// ═════════════════════════════════════════════════════════════════════
 //  PANEL RENDERERS
-// ═════════════════════════════════════════════════════════════════════
 static void pCPU(const AppState& st,int y,int x,int h,int w){
     if(h<6 || w<20) return;
     drawPanel(y,x,h,w,"CPU + SENSORS");
@@ -1366,9 +1331,7 @@ static void pProc(const AppState& st,int y,int x,int h,int w,int scroll,int sele
     }
 }
 
-// ═════════════════════════════════════════════════════════════════════
 //  LAYOUT SYSTEM
-// ═════════════════════════════════════════════════════════════════════
 static int getLayoutIndex(){
     int idx = 0;
     if(g_cfg.cpu)  idx |= 1;
@@ -1538,9 +1501,7 @@ static void applyLayout(const AppState& st,int rows,int cols){
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────
 //  MAIN
-// ─────────────────────────────────────────────────────────────────────
 int main(){
     setlocale(LC_ALL,"");
     signal(SIGWINCH,[](int){g_resize=true;});
