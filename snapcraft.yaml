@@ -11,7 +11,6 @@ description: |
 grade: stable
 confinement: strict
 
-# Multi-architecture support for Intel/AMD and ARM (Raspberry Pi/Mac)
 platforms:
   amd64:
   arm64:
@@ -27,7 +26,6 @@ parts:
       - libncursesw5-dev
     stage-packages:
       - libncursesw6
-    # This block moves your icon and desktop file into the Snap
     override-prime: |
       craftctl default
       mkdir -p $CRAFT_PRIME/meta/gui
@@ -44,4 +42,4 @@ apps:
       - mount-observe      # To see disk usage
       - network-observe    # To see network activity
       - hardware-observe   # To see hardware
-      - process-control    # CRITICAL: Allows sending signals (kill)
+      - process-control    # Allows sending signals (kill)
